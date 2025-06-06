@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&family=SUSE:wght@100..800&family=Space+Grotesk:wght@300..700&display=swap"
+        rel="stylesheet">
+</head>
+
+
+<script>
+    let websocket;
+
+    function websocketClosed() {
+        document.getElementById('connected').innerHTML = '⚠️';
+        document.querySelector('.controlsContainer').classList.remove('loaded');
+        document.querySelector('.loadingContainer').classList.remove('loaded');
+    }
+
+    function startWebsocket() {
+        websocket = new WebSocket(`ws://${window.location.hostname}/ws`);
+
+        websocket.onopen = function (event) {
+            websocket.send('info');
+            //document.getElementById('connected').innerHTML = '✅';
+            document.querySelector('.controlsContainer').classList.add('loaded');
+            document.querySelector('.loadingContainer').classList.add('loaded');
+
+        };
+        websocket.onclose = function (event) {
+            websocketClosed();
+        };
+        websocket.onerror = function (event) {
+            websocketClosed();
+        };
+
+
+        websocket.onmessage = function (event) {
+            if (event.data.substring(0, 2) == 'i:') {
+                //Info
+                let infoText = event.data.substring(2, event.data.length);
+                handleInfo(infoText);
+            }
+            else if (event.data.substring(0, 6) == 'title:') {
+                //Info
+                let title = event.data.substring(6, event.data.length);
+                document.title = title;
+                document.getElementById('title').innerHTML = title;
+            }
+
+        };
+    }
+
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            websocket?.close();
+        }
+        else {
+            startWebsocket();
+        }
+    });
+    window.addEventListener('load', function () {
+        startWebsocket();
+    });
+
+    function handlePauseButton() {
+        websocket.send('pause');
+    }
+    function handlePlayButton() {
+        websocket.send('play');
+    }
+
+    function handlePlayStream(event) {
+        console.log(event);
+
+        websocket.send('play:' + event.target.dataset.url);
+    }
+
+    function handleVolumeChange(event) {
+        console.log(event);
+        websocket.send('volume:' + event.target.value.padStart(2, "0"));
+    }
+
+    function handleStreamChange() {
+        console.log(event);
+        websocket.send('play:' + event.target.value);
+    }
+
+    function handleInfo(infoText) {
+
+        console.log(infoText);
+
+        document.querySelectorAll('.control').forEach(elem => {
+            elem.classList.remove('disabled');
+            elem.classList.remove('active');
+        })
+
+        //document.getElementById('marquee').innerHTML = infoText;
+
+        if (infoText == 'paused') {
+            document.getElementById('pauseButton').classList.add('disabled');
+            return;
+        }
+
+
+        document.getElementById('playButton').classList.add('disabled');
+
+        document.querySelector(`[data-url="${infoText}"]`).classList.add('active');
+
+
+    }
+
+    function handlePause() {
+    }
+    function handlePlay() {
+
+    }
+</script>
+
+<style>
+    body {
+        background-color: #3B4B59;
+        background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        font-family: "Rubik", apple color emoji, segoe ui emoji, noto color emoji, android emoji, emojisymbols, emojione mozilla, twemoji mozilla, segoe ui symbol;
+        color: #d9c3b0;
+        text-align: center;
+    }
+
+    .controlsContainer {
+        opacity: 0;
+        transform: scale(1.2);
+        transition: all 1s ease;
+    }
+
+    .controlsContainer.loaded {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    .loadingContainer.loaded {
+        display: none;
+    }
+
+    .controls {
+        margin: 10px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .control {
+
+        flex-grow: 1;
+        background: #bfa07a;
+        color: #3B4B59;
+        height: 100px;
+        transform: skew(-4deg);
+        border-radius: 5px;
+        box-shadow: -7px 10px 5px 0px rgba(0, 0, 0, 0.58);
+        -webkit-box-shadow: -7px 10px 5px 0px rgba(0, 0, 0, 0.58);
+        -moz-box-shadow: -7px 10px 5px 0px rgba(0, 0, 0, 0.58);
+        font-size: 2rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 1s ease-in-out;
+        border: 2px solid #2b3742;
+        flex-grow: 1;
+    }
+
+    .control.disabled {
+        display: none;
+        opacity: 0.8;
+        cursor: unset;
+        /* box-shadow: unset; */
+        box-shadow: -5px 6px 44px 7px rgba(0, 0, 0, 0.38) inset;
+        -webkit-box-shadow: -5px 6px 44px 7px rgba(0, 0, 0, 0.38) inset;
+
+    }
+
+    .control.active {
+        cursor: unset;
+        outline: 2px solid white;
+        ;
+        background: rgb(20, 19, 19);
+        color: #bfa07a;
+        transform: skew(2deg)
+    }
+
+    marquee {
+        font-family: "SUSE", sans-serif;
+    }
+
+    /*********** Baseline, reset styles ***********/
+    input {
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+        cursor: pointer;
+        width: 80%;
+        border-radius: 5px;
+        background-color: #b5c0c4;
+        height: 3rem;
+        border: none;
+        font-family: "SUSE", sans-serif;
+        text-align: center;
+    }
+
+    /* Removes default focus */
+    input:focus {
+        outline: none;
+    }
+
+    /*********** Baseline, reset styles ***********/
+    input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    /* Removes default focus */
+    input[type="range"]:focus {
+        outline: none;
+    }
+
+    /******** Chrome, Safari, Opera and Edge Chromium styles ********/
+    /* slider track */
+    input[type="range"]::-webkit-slider-runnable-track {
+        background-color: #b5c0c4;
+        border: none;
+        outline: none;
+        height: 3rem;
+        border-radius: 5px;
+
+    }
+
+    /* slider thumb */
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        /* Override default look */
+        appearance: none;
+        margin-top: 20px;
+        /* Centers thumb on the track */
+        background-color: #bf335a;
+        border-radius: 0.5rem;
+        height: 0.5rem;
+        width: 2rem;
+        transform: skew(-20deg);
+    }
+
+    input[type="range"]:focus::-webkit-slider-thumb {
+        outline: 3px solid #bf335a;
+        outline-offset: 0.125rem;
+
+    }
+
+    /*********** Firefox styles ***********/
+    /* slider track */
+    input[type="range"]::-moz-range-track {
+        background-color: #b5c0c4;
+        height: 3rem;
+        border-radius: 5px;
+    }
+
+    /* slider thumb */
+    input[type="range"]::-moz-range-thumb {
+        background-color: #bf335a;
+        border: none;
+        /*Removes extra border that FF applies*/
+        border-radius: 0rem;
+        height: 0.5rem;
+        width: 2rem;
+        transform: skew(-20deg);
+
+    }
+
+    input[type="range"]:focus::-moz-range-thumb {
+        outline: 3px solid #bf335a;
+        outline-offset: 0.125rem;
+    }
+</style>
+
+<body>
+    <h1><i> Tuner</i> </h1>
+    <div class="loadingContainer">
+        <marquee behavior="alternate" direction="">
+            <i id="marquee"> connecting...</i>
+        </marquee>
+    </div>
+
+    <div class="controlsContainer">
+
+        <marquee direction="">
+            <i id="title"></i>
+        </marquee>
+
+
+        <div class="controls">
+            <button id="playButton" class="control" onclick="handlePlayButton()">></button>
+            <button id="pauseButton" class="control disabled" onclick="handlePauseButton()">II</button>
+        </div>
+        <input type="range" min="0" max="21" style="margin: 20px 0px;" id="volume" onchange="handleVolumeChange(event)"
+            value="10">
+        <!--     <audio id="player" controls autoplay src='' onpause="handlePause()" onplay="handlePlay()" muted></audio>
+ -->
+
+        <input type="text" style="margin: 20px 0px;" id="" placeholder="stream-url..."
+            onchange="handleStreamChange(event)">
+
+        <div class="controls">
+            <button class="control active" onclick="handlePlayStream(event)"
+                data-url="https://stream-relay-geo.ntslive.net/stream">NTS-1</button>
+            <button class="control" onclick="handlePlayStream(event)"
+                data-url="https://stream-relay-geo.ntslive.net/stream2">NTS-2</button>
+            <button class="control" onclick="handlePlayStream(event)"
+                data-url="https://stream-mixtape-geo.ntslive.net/mixtape23">NTS-Field</button>
+            <button class="control" onclick="handlePlayStream(event)"
+                data-url="https://stream-mixtape-geo.ntslive.net/mixtape">NTS Mixtape</button>
+            <button class="control" onclick="handlePlayStream(event)"
+                data-url="https://stream.live.vc.bbcmedia.co.uk/bbc_world_service">World Service</button>
+            <button class="control" onclick="handlePlayStream(event)"
+                data-url="https://stream-mixtape-geo.ntslive.net/mixtape6">NTS-Classics</button>
+            <button class="control" onclick="handlePlayStream(event)"
+                data-url="https://worldwidefm.out.airtime.pro:8000/worldwidefm_a">Worldwide FM</button>
+
+        </div>
+    </div>
+
+
+
+</body>
+
+</html>
