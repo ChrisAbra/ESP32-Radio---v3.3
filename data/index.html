@@ -306,10 +306,6 @@
             value="10">
         <!--     <audio id="player" controls autoplay src='' onpause="handlePause()" onplay="handlePlay()" muted></audio>
  -->
-
-        <input type="text" style="margin: 20px 0px;" id="" placeholder="stream-url..."
-            onchange="handleStreamChange(event)">
-
         <div class="controls">
             <button class="control active" onclick="handlePlayStream(event)"
                 data-url="https://stream-relay-geo.ntslive.net/stream">NTS-1</button>
@@ -324,9 +320,15 @@
             <button class="control" onclick="handlePlayStream(event)"
                 data-url="https://stream-mixtape-geo.ntslive.net/mixtape6">NTS-Classics</button>
             <button class="control" onclick="handlePlayStream(event)"
+                data-url="http://lstn.lv/bbcradio.m3u8?station=bbc_6music&bitrate=48000">6Music </button>
+            <button class="control" onclick="handlePlayStream(event)"
                 data-url="https://worldwidefm.out.airtime.pro:8000/worldwidefm_a">Worldwide FM</button>
 
         </div>
+
+        <input type="text" style="margin: 20px 0px;" id="" placeholder="stream-url..."
+            onchange="handleStreamChange(event)">
+
     </div>
 
 

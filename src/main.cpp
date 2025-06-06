@@ -213,8 +213,8 @@ void setupWebserver()
   }
   file.close();
 
-  if (!MDNS.begin("git-radio"))
-  { // Set the hostname to "Rams-RT20.local"
+  if (!MDNS.begin("radio"))
+  { // Set the hostname to "radio.local"
     Serial.println("Error setting up MDNS responder!");
     while (1)
     {
