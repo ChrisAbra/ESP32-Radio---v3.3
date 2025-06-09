@@ -1,0 +1,29 @@
+devices: 
+  -ESP32
+  -PCM5102
+
+nets:
+  - 5V
+  - GND
+  - DIN
+  - BCK
+  - LCK
+
+ESP32:
+    connections: 
+      -VCC: 5V
+      -GND: GND
+      -GPIO_15: DIN
+      -GPIO_17: LBCK
+      -GPIO_17: LC
+      -GPIO_18: GPIO_17
+
+
+devices:
+    connections: 
+      -VCC: 5V
+      -GND: GND
+      -DIN: DIN
+      -LBCK: LBCK
+      -LC: LC    
+      -SCK: GND
